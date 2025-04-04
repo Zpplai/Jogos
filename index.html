@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loja Xbox 360</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #fff;
+      padding: 20px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .search-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .search-container input {
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .categories {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .categories button {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .categories button:hover {
+      background-color: #218838;
+    }
+
+    .game-list {
+      list-style-type: none;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .game-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background-color: #2d2d2d;
+      border-radius: 10px;
+      margin: 10px;
+      padding: 10px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      width: 200px;
+    }
+
+    .game-card:hover {
+      transform: scale(1.05);
+    }
+
+    .game-card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+
+    .game-title {
+      font-size: 18px;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      z-index: 999;
+      display: none;
+    }
+
+    .game-detail {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1f1f1f;
+      width: 90%;
+      max-width: 600px;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 1000;
+    }
+
+    .game-detail img {
+      width: 100%;
+      border-radius: 10px;
+    }
+
+    .game-info h2 {
+      margin-top: 10px;
+    }
+
+    .download-btn {
+      background-color: #28a745;
+      padding: 10px;
+      color: white;
+      display: inline-block;
+      margin-top: 10px;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+
+    .login-container,
+    .add-game-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #1f1f1f;
+      padding: 20px;
+      border-radius: 10px;
+      display: none;
+      z-index: 1001;
+    }
+
+    .login-container input,
+    .add-game-container input,
+    .add-game-container textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .login-container button,
+    .add-game-container button {
+      width: 100%;
+      padding: 10px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    .logout-button {
+      background-color: #dc3545 !important;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Loja Xbox 360</h1>
+
+  <div class="search-container">
+    <input type="text" id="search" placeholder="Pesquise um jogo..." onkeyup="searchGame()">
+  </div>
+
+  <div class="categories">
+    <button onclick="filterCategory('action')">Ação</button>
+    <button onclick="filterCategory('rpg')">RPG</button>
+    <button onclick="filterCategory('adventure')">Aventura</button>
+    <button onclick="filterCategory('shooter')">Tiro</button>
+  </div>
+
+  <ul class="game-list" id="game-list"></ul>
+
+  <div class="overlay" onclick="closeGameDetail()"></div>
+
+  <div class="game-detail" id="game-detail">
+    <img id="game-image" src="" alt="">
+    <div class="game-info">
+      <h2 id="game-title"></h2>
+      <p id="game-description"></p>
+      <a id="game-link" href="#" class="download-btn" target="_blank">Baixar Jogo</a>
+    </div>
+  </div>
+
+  <div class="login-container" id="login-container">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Nome de Usuário">
+    <input type="password" id="password" placeholder="Senha">
+    <button onclick="login()">Entrar</button>
+    <button onclick="closeLogin()">Cancelar</button>
+  </div>
+
+  <div class="add-game-container" id="add-game-container">
+    <h2>Adicionar Jogo</h2>
+    <input type="text" id="game-title-input" placeholder="Título do Jogo">
+    <textarea id="game-description-input" placeholder="Descrição do Jogo"></textarea>
+    <input type="text" id="game-link-input" placeholder="Link do Jogo">
+    <input type="text" id="game-image-input" placeholder="Link da Imagem">
+    <input type="text" id="game-category-input" placeholder="Categoria (ex: action)">
+    <button onclick="addGame()">Adicionar Jogo</button>
+    <button class="logout-button" onclick="logout()">Sair</button>
+  </div>
+
+  <script>
+    let games = [
+      {
+        title: "Halo 3",
+        description: "Um clássico jogo de tiro futurista.",
+        image: "https://via.placeholder.com/300x200?text=Halo+3",
+        link: "#",
+        category: "shooter"
+      },
+      {
+        title: "Fable II",
+        description: "Aventura mágica em um mundo de fantasia.",
+        image: "https://via.placeholder.com/300x200?text=Fable+II",
+        link: "#",
+        category: "rpg"
+      }
+    ];
+
+    function renderGames() {
+      const gameList = document.getElementById("game-list");
+      gameList.innerHTML = "";
+      games.forEach((game, index) => {
+        const li = document.createElement("li");
+        li.className = "game-card";
+        li.setAttribute("data-category", game.category);
+        li.innerHTML = `
+          <img src="${game.image}" alt="${game.title}">
+          <div class="game-title">${game.title}</div>
+        `;
+        li.onclick = () => showGameDetail(index);
+        gameList.appendChild(li);
+      });
+    }
+
+    function searchGame() {
+      const term = document.getElementById("search").value.toLowerCase();
+      const cards = document.querySelectorAll(".game-card");
+      cards.forEach(card => {
+        const title = card.querySelector(".game-title").textContent.toLowerCase();
+        card.style.display = title.includes(term) ? "" : "none";
+      });
+      if (term === "adicionar jogo") {
+        document.getElementById("login-container").style.display = "block";
+      }
+    }
+
+    function filterCategory(cat) {
+      const cards = document.querySelectorAll(".game-card");
+      cards.forEach(card => {
+        card.style.display = card.dataset.category === cat ? "" : "none";
+      });
+    }
+
+    function showGameDetail(index) {
+      const game = games[index];
+      document.getElementById("game-title").textContent = game.title;
+      document.getElementById("game-description").textContent = game.description;
+      document.getElementById("game-image").src = game.image;
+      document.getElementById("game-link").href = game.link;
+      document.querySelector(".overlay").style.display = "block";
+      document.getElementById("game-detail").style.display = "block";
+    }
+
+    function closeGameDetail() {
+      document.querySelector(".overlay").style.display = "none";
+      document.getElementById("game-detail").style.display = "none";
+    }
+
+    function login() {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+      if (user === "admin" && pass === "admin123") {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("add-game-container").style.display = "block";
+      } else {
+        alert("Usuário ou senha incorretos!");
+      }
+    }
+
+    function closeLogin() {
+      document.getElementById("login-container").style.display = "none";
+    }
+
+    function addGame() {
+      const title = document.getElementById("game-title-input").value;
+      const desc = document.getElementById("game-description-input").value;
+      const link = document.getElementById("game-link-input").value;
+      const image = document.getElementById("game-image-input").value;
+      const category = document.getElementById("game-category-input").value;
+      if (title && desc && link && image && category) {
+        games.push({ title, description: desc, link, image, category });
+        renderGames();
+        alert("Jogo adicionado!");
+        document.getElementById("add-game-container").style.display = "none";
+      } else {
+        alert("Preencha todos os campos!");
+      }
+    }
+
+    function logout() {
+      document.getElementById("add-game-container").style.display = "none";
+    }
+
+    window.onload = () => {
+      renderGames();
+    };
+  </script>
+
+</body>
+</html>
